@@ -1,10 +1,9 @@
-apiVersion: v1
-kind: Pod
+apiVersion: v1                       # Specifies API version for the Pod resource
+kind: Pod                             # Resource type: Pod
 metadata:
-  name: debug
-  namespace: expense
+  name: debug                         # Name of the Pod
+  namespace: expense                  # Namespace where the Pod will be created
 spec:
-  containers:
-  # docker run -d --name nginx nginx
-  - name: debug
-    image: mahalakshmi2997/debug:v1
+  containers:                         # List of containers for the Pod
+  - name: debug                       # Container name
+    image: mahalakshmi2997/debug:v1   # Docker image for the container
