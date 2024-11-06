@@ -1,45 +1,112 @@
-apiVersion: apps/v1                    # API version for Deployment resource
-kind: Deployment                        # Resource type: Deployment
-metadata:
-  name: frontend                        # Name of the Deployment
-  namespace: expense                    # Namespace where the Deployment is created
-  labels:
-    app: frontend                       # Label to identify the application
-    tier: web                           # Label to identify the tier of the application
-    project: expense                    # Label for project name
+# apiVersion: apps/v1                    # API version for Deployment resource
+# kind: Deployment                        # Resource type: Deployment
+# metadata:
+#   name: frontend                        # Name of the Deployment
+#   namespace: expense                    # Namespace where the Deployment is created
+#   labels:
+#     app: frontend                       # Label to identify the application
+#     tier: web                           # Label to identify the tier of the application
+#     project: expense                    # Label for project name
 
+# spec:
+#   replicas: 2                           # Number of Pod replicas to be created
+#   selector:
+#     matchLabels:                        # Labels to match for selecting Pods
+#       app: frontend
+#       tier: web
+#       project: expense
+#   template:
+#     metadata:
+#       labels:                           # Labels assigned to the Pods
+#         app: frontend
+#         tier: web
+#         project: expense
+#     spec:
+#       containers:
+#       - name: frontend                  # Container name within the Pod
+#         image: mahalakshmi2997/frontend:v1 # Container image to use
+# ---
+# apiVersion: v1                          # API version for Service resource
+# kind: Service                           # Resource type: Service
+# metadata:
+#   name: frontend                        # Name of the Service
+#   namespace: expense                    # Namespace where the Service is created
+
+# spec:
+#   type: LoadBalancer                    # Type of Service (exposes externally with a LoadBalancer)
+#   selector:
+#     app: frontend                       # Matches Pods with these labels
+#     tier: web
+#     project: expense
+#   ports:
+#   - name: frontend-port                 # Name of the Service port
+#     protocol: TCP                       # Protocol used for the Service (TCP)
+#     port: 80                            # Port on which the Service is exposed
+#     targetPort: 80                      # Port on the container to which the Service forwards traffic
+
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: expense
+  labels:
+    app: frontend
+    tier: web
+    project: expense
 spec:
-  replicas: 2                           # Number of Pod replicas to be created
+  replicas: 2
   selector:
-    matchLabels:                        # Labels to match for selecting Pods
+    matchLabels:
       app: frontend
       tier: web
       project: expense
   template:
     metadata:
-      labels:                           # Labels assigned to the Pods
+      labels:
         app: frontend
         tier: web
         project: expense
     spec:
       containers:
-      - name: frontend                  # Container name within the Pod
-        image: mahalakshmi2997/frontend:v1 # Container image to use
+      - name: frontend
+        image: mahalakshmi2997/frontend:v1
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          # limits is greater than or equal to requests
+          limits:
+            cpu: 100m
+            memory: 128Mi
 ---
-apiVersion: v1                          # API version for Service resource
-kind: Service                           # Resource type: Service
+kind: Service
+apiVersion: v1
 metadata:
-  name: frontend                        # Name of the Service
-  namespace: expense                    # Namespace where the Service is created
-
+  name: frontend
+  namespace: expense
 spec:
-  type: LoadBalancer                    # Type of Service (exposes externally with a LoadBalancer)
+  type: LoadBalancer
   selector:
-    app: frontend                       # Matches Pods with these labels
+    app: frontend
     tier: web
     project: expense
   ports:
-  - name: frontend-port                 # Name of the Service port
-    protocol: TCP                       # Protocol used for the Service (TCP)
-    port: 80                            # Port on which the Service is exposed
-    targetPort: 80                      # Port on the container to which the Service forwards traffic
+  - name: frontend-port
+    protocol: TCP
+    port: 80 # service port
+    targetPort: 80 # container port
+---
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+ name: frontend
+ namespace: expense
+spec:
+ scaleTargetRef:
+   apiVersion: apps/v1
+   kind: Deployment
+   name: frontend
+ minReplicas: 1
+ maxReplicas: 10
+ targetCPUUtilizationPercentage: 15 # usually 75 in real environment
